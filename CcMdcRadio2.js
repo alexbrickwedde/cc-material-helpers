@@ -13,26 +13,14 @@ class CcMdcRadio extends HTMLElement {
       this.radiovalue = this.getAttribute("value") || "true";
     }
 
-    this.innerHTML = `<div class="mdc-form-field">
-      <div class="mdc-form-field">
-        <div class="mdc-radio">
-          <input class="mdc-radio__native-control" type="radio" id="cc-mdc-label-${globalLabelCount}" name="${name}" value="${this.radiovalue}">
-          <div class="mdc-radio__background">
-            <div class="mdc-radio__outer-circle"></div>
-            <div class="mdc-radio__inner-circle"></div>
-          </div>
-          <div class="mdc-radio__ripple"></div>
-        </div>
-        <label for="cc-mdc-label-${globalLabelCount}">${label}</label>
-      </div>
+    this.innerHTML = `<div class="mdc-form-field" style="display:inline-flex;align-items:center;gap:12px;">
+      <md-radio id="cc-mdc-label-${globalLabelCount}" name="${name}" value="${this.radiovalue}" touch-target="wrapper"></md-radio>
+      <label for="cc-mdc-label-${globalLabelCount}">${label}</label>
     </div>
     `;
 
-    this.mdcRadioDiv = this.querySelector(".mdc-radio");
-    this.mdcComponent = mdc.radio.MDCRadio.attachTo(this.mdcRadioDiv);
-    this.mdcFormField = mdc.formField.MDCFormField.attachTo(this.querySelector('.mdc-form-field'));
-    this.mdcFormField.input = this.mdcComponent;
-    this.input = this.querySelector("input");
+    this.mdcComponent = this.querySelector("md-radio");
+    this.input = this.mdcComponent;
     this.label = this.querySelector("label");
 
     var targetfun = htmlFunctionArray[this.getAttribute(".target")];
@@ -134,8 +122,6 @@ class CcMdcRadio extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
-    this.mdcFormField.destroy();
   }
 }
 

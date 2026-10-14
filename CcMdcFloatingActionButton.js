@@ -10,24 +10,19 @@ class CcMdcFloatingActionButton extends HTMLElement {
     var icon = this.getAttribute("icon") || "add";
 
     if (label) {
-      this.innerHTML = `<button class="mdc-fab mdc-fab--extended">
-      <div class="mdc-fab__ripple"></div>
-      <span class="material-icons mdc-fab__icon">${icon}</span>
-      <span class="mdc-fab__label">${label}</span>
-    </button>`;
+      this.innerHTML = `<md-fab label="${label}" variant="primary">
+      <span class="material-icons" slot="icon">${icon}</span>
+    </md-fab>`;
     } else {
-      this.innerHTML = `<button class="mdc-fab mdc-fab--extended">
-      <div class="mdc-fab__ripple"></div>
-      <span class="material-icons mdc-fab__icon">${icon}</span>
-    </button>`;
+      this.innerHTML = `<md-fab variant="primary">
+      <span class="material-icons" slot="icon">${icon}</span>
+    </md-fab>`;
     }
 
     this.button = this.childNodes[0];
-    this.mdcComponent = mdc.ripple.MDCRipple.attachTo(this.button);
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 
