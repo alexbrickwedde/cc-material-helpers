@@ -32,32 +32,24 @@ class CcMdcPrompt extends HTMLElement {
     var ok = this.ok || this.getAttribute("ok") || t9n`Ok`;
     var cancel = this.cancel || this.getAttribute("cancel") || t9n`Cancel`;
 
-    this.innerHTML = `<div class="mdc-dialog" style="z-index:1000;">
-      <div class="mdc-dialog__container">
-        <div class="mdc-dialog__surface"
-          style="display:table;";
+    this.innerHTML = `<md-dialog style="z-index:1000;"
           role="alertdialog"
           aria-modal="true"
           aria-labelledby="my-dialog-title"
           aria-describedby="my-dialog-content">
-          <div class="mdc-dialog__content" id="my-dialog-content" style="box-sizing:border-box;">
-            <cc-mdc-text-field id="value" type="text" style="margin:10px;" label="${label}"></cc-mdc-text-field>
-            <cc-mdc-select id="objects" style="margin:10px;" label="${label}"></cc-mdc-select>
-          </div>
-          <div class="mdc-dialog__actions">
-            <button type="button" class="mdc-button mdc-dialog__button" id="ok">
-              <div class="mdc-button__ripple"></div>
-              <span class="mdc-button__label">${ok}</span>
-            </button>
-            <button type="button" class="mdc-button mdc-dialog__button" id="cancel">
-              <div class="mdc-button__ripple"></div>
-              <span class="mdc-button__label">${cancel}</span>
-            </button>
-          </div>
-        </div>
+      <div slot="content" id="my-dialog-content" style="box-sizing:border-box;">
+        <cc-mdc-text-field id="value" type="text" style="margin:10px;" label="${label}"></cc-mdc-text-field>
+        <cc-mdc-select id="objects" style="margin:10px;" label="${label}"></cc-mdc-select>
       </div>
-      <div class="mdc-dialog__scrim"></div>
-    </div>`;
+      <div slot="actions">
+        <md-text-button type="button" id="ok">
+          <span class="mdc-button__label">${ok}</span>
+        </md-text-button>
+        <md-text-button type="button" id="cancel">
+          <span class="mdc-button__label">${cancel}</span>
+        </md-text-button>
+      </div>
+    </md-dialog>`;
 
     var okBtn = this.querySelector("#ok");
     okBtn.addEventListener("click", (e) => {
@@ -81,6 +73,7 @@ class CcMdcPrompt extends HTMLElement {
         this.dlgResolve("ok");
       }
 
+      this.mdcComponent.close();
       setTimeout(() => {
         this.parentNode.removeChild(this);
       }, 100);
@@ -90,6 +83,7 @@ class CcMdcPrompt extends HTMLElement {
       if (this.dlgResolve) {
         this.dlgResolve("cancel");
       }
+      this.mdcComponent.close();
       setTimeout(() => {
         this.parentNode.removeChild(this);
       }, 100);
@@ -119,11 +113,21 @@ class CcMdcPrompt extends HTMLElement {
     }
 
     this.dialog = this.childNodes[0];
-    this.mdcComponent = mdc.dialog.MDCDialog.attachTo(this.dialog);
-    this.mdcComponent.escapeKeyAction = "close";
-    this.mdcComponent.scrimClickAction = "";
+    this.mdcComponent = this.dialog;
+
+    // Never close when the scrim is clicked (MDC scrimClickAction = "").
+    this.dialog.addEventListener("cancel", (e) => {
+      e.preventDefault();
+    });
+    // Close on escape key (MDC escapeKeyAction = "close").
+    this.dialog.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        this.mdcComponent.close();
+      }
+    });
     
-    this.mdcComponent.open();
+    this.mdcComponent.show();
 
 
     this.applyValue();
@@ -131,9 +135,6 @@ class CcMdcPrompt extends HTMLElement {
 
   disconnectedCallback() {
     this.dlgResolve = null;
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 }
 

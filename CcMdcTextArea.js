@@ -11,17 +11,10 @@ class CcMdcTextArea extends HTMLElement {
     var hasWidth = ("" + this.style.width).indexOf("px") > 0 || ("" + this.style.width).indexOf("vw") > 0;
     var hasHeight = ("" + this.style.height).indexOf("px") > 0 || ("" + this.style.height).indexOf("vh") > 0;
 
-    this.innerHTML = html`<label class="mdc-text-field mdc-text-field--filled mdc-text-field--textarea" ${(hasWidth || hasHeight) ? `style="width:100%;height:100%;"` : ``}>
-    <span class="mdc-text-field__ripple"></span>
-    <span class="mdc-floating-label" id="cc-mdc-label-${globalLabelCount}">${label}</span>
-    <span class="mdc-text-field__resizer">
-      <textarea class="mdc-text-field__input" rows="8" cols="40" aria-label="${label}"></textarea>
-    </span>
-    <span class="mdc-line-ripple"></span>
-  </label>`;
+    this.innerHTML = html`<md-filled-text-field type="textarea" rows="8" cols="40" label="${label}" ${(hasWidth || hasHeight) ? `style="width:100%;height:100%;"` : ``}></md-filled-text-field>`;
 
-    this.mdcComponent = mdc.textField.MDCTextField.attachTo(this.childNodes[0]);
-    this.input = this.querySelector("textarea");
+    this.mdcComponent = this.childNodes[0];
+    this.input = this.mdcComponent;
 
     var targetfun = htmlFunctionArray[this.getAttribute(".target")];
     if (targetfun && targetfun.func && targetfun.func instanceof CcD5cHolder) {
@@ -67,20 +60,19 @@ class CcMdcTextArea extends HTMLElement {
   }
 
   applyDisabled() {
-    if (this.input) {
+    if (this.mdcComponent) {
       if (this._disabled) {
-        this.input.setAttribute("disabled", true);
+        this.mdcComponent.disabled = true;
       } else {
-        this.input.removeAttribute("disabled");
+        this.mdcComponent.disabled = false;
       }
     }
   }
 
   set label (value) {
     this._label = value;
-    var x = this.querySelector(".mdc-floating-label");
-    if (x) {
-      x.innerText = value;
+    if (this.mdcComponent) {
+      this.mdcComponent.label = value;
     }
   }
 
@@ -103,7 +95,6 @@ class CcMdcTextArea extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 

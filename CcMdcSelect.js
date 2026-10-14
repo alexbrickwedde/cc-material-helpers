@@ -68,16 +68,16 @@ class CcMdcSelect extends HTMLElement {
   }
 
   syncList(ignoreLayoutOptions) {
-    if (!this.mdcList) {
+    if (!this.mdcComponent) {
       return;
     }
 
-    for(var i = this.mdcList.childNodes.length - 1; i >= 0; i--) {
-      var cn = this.mdcList.childNodes[i];
+    for(var i = this.mdcComponent.childNodes.length - 1; i >= 0; i--) {
+      var cn = this.mdcComponent.childNodes[i];
       if (cn.listItemFilter) {
         continue;
       }
-      this.mdcList.removeChild(cn);
+      this.mdcComponent.removeChild(cn);
     }
 
     var maxItems = this.maxItems || Number.MAX_SAFE_INTEGER;
@@ -95,27 +95,28 @@ class CcMdcSelect extends HTMLElement {
       }
       inserted++;
 
-      var li = document.createElement("li");
+      var li = document.createElement("md-select-option");
+      li.value = stringifiedvalue;
       if (this._value === stringifiedvalue) {
-        li.className = "mdc-list-item mdc-list-item--selected";
+        li.setAttribute("selected", "");
         li.setAttribute("aria-selected", true);
-      } else {
-        li.className = "mdc-list-item";
       }
       li.setAttribute("data-value", stringifiedvalue);
+      var headline = document.createElement("div");
+      headline.setAttribute("slot", "headline");
       if (isDefined(item.html)) {
         if (item.html instanceof HTMLElement) {
-          li.innerHTML = `<span class="mdc-list-item__ripple"></span>`;
           item.html.className = (item.html.className ? item.html.className + " " : "") + "mdc-list-item__text"
-          li.appendChild(item.html)
+          headline.appendChild(item.html)
         } else {
-          li.innerHTML = `<span class="mdc-list-item__ripple"></span><span class="mdc-list-item__text">${item.html}</span>`;
+          headline.innerHTML = `<span class="mdc-list-item__text">${item.html}</span>`;
         }
       } else if (isDefined(item.name)) {
-        li.innerHTML = html`<span class="mdc-list-item__ripple"></span><span class="mdc-list-item__text">${item.name}</span>`;
+        headline.innerHTML = html`<span class="mdc-list-item__text">${item.name}</span>`;
       }
+      li.appendChild(headline);
 
-      this.mdcList.appendChild(li);
+      this.mdcComponent.appendChild(li);
     }
 
     if (!ignoreLayoutOptions) {
@@ -129,8 +130,10 @@ class CcMdcSelect extends HTMLElement {
 
   layoutOptions() {
     if (this.mdcComponent) {
-      this.mdcComponent.layout();
-      this.mdcComponent.layoutOptions();
+      if (this.mdcComponent.requestUpdate) {
+        this.mdcComponent.requestUpdate();
+      }
+      this.applyValue();
     }
   }
 
@@ -173,9 +176,8 @@ class CcMdcSelect extends HTMLElement {
 
   set label (value) {
     this._label = value;
-    var c = this.querySelector(".mdc-floating-label");
-    if (c) {
-      c.innerText = value;
+    if (this.mdcComponent) {
+      this.mdcComponent.label = value;
     }
   }
 
@@ -226,60 +228,27 @@ class CcMdcSelect extends HTMLElement {
       height = parseInt(this.style.height);
     }
 
-    this.innerHTML = html`<div class="mdc-select mdc-select--filled" ${hasWidth ? `style="width:100%;min-width:100%;max-width:100%;"` : `style="min-width:${width}px;max-width:${width}px;width:${width}px;"`}>
-  <div class="mdc-select__anchor" style="${height != 56 ? "height:" + height + "px;align-items:inherit;padding-left:0px;" : ""}">
-    <span class="mdc-select__ripple"></span>
-    <span class="mdc-select__selected-text" style="${height != 56 ? "font-size:" + parseInt(height * 0.6) + "px;line-height:" + height + "px;height:" + height + "px;" : ""}"></span>
-    <span class="mdc-select__dropdown-icon" style="${height != 56 ? "margin-left:0px;margin-right:0px;" : ""}">
-      <svg
-          class="mdc-select__dropdown-icon-graphic"
-          viewBox="7 10 10 5">
-        <polygon
-            class="mdc-select__dropdown-icon-inactive"
-            stroke="none"
-            fill-rule="evenodd"
-            points="7 10 12 15 17 10">
-        </polygon>
-        <polygon
-            class="mdc-select__dropdown-icon-active"
-            stroke="none"
-            fill-rule="evenodd"
-            points="7 15 12 10 17 15">
-        </polygon>
-      </svg>
-    </span>
-    <span class="mdc-floating-label">${label}</span>` +
-    (height != 56 ? "" : '<span class="mdc-line-ripple"></span>') + 
-    html`  </div>
-
-  <div class="mdc-select__menu mdc-menu mdc-menu-surface mdc-menu-surface--fixed">
-    <ul class="mdc-list">
-    </ul>
-  </div>
-</div>`;
+    this.innerHTML = html`<md-filled-select label="${label}" menu-positioning="fixed" ${hasWidth ? `style="width:100%;min-width:100%;max-width:100%;"` : `style="min-width:${width}px;max-width:${width}px;width:${width}px;"`}></md-filled-select>`;
 
     var elem = this.childNodes[0];
-    this.mdcComponent = mdc.select.MDCSelect.attachTo(elem);
-//    this.mdcComponent.setFixedPosition(true)
-    elem.addEventListener("MDCSelect:change", (e) => {
+    this.mdcComponent = elem;
+    if (height != 56) {
+      elem.style.setProperty("--md-filled-field-top-space", "4px");
+      elem.style.setProperty("--md-filled-field-bottom-space", "4px");
+      elem.style.height = height + "px";
+    }
+    elem.addEventListener("change", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      this.dispatchEvent(new CustomEvent("change", {detail: {value : e.detail.value ? JSON.parse(e.detail.value) : undefined }}));
+      this.dispatchEvent(new CustomEvent("change", {detail: {value : this.mdcComponent.value ? JSON.parse(this.mdcComponent.value) : undefined }}));
     });
-    
-    var menuContainer = this.querySelector(".mdc-menu");
-    menuContainer.style.minWidth = `${this.menuContainerMinWidth}px`;
-
-    this.mdcList = this.querySelector(".mdc-list");
 
     if (this.#hasFilter) {
-      let fli = document.createElement("li");
+      let fli = document.createElement("div");
       fli.listItemFilter = true;
-      fli.setAttribute("data-value", { some : "object" });
-      fli.className = "mdc-list-item";
-      fli.style.height = "60px";
+      fli.style.padding = "8px 16px";
       fli.innerHTML = `
-        <span class="mdc-list-item__ripple"></span><span class="mdc-list-item__text"><cc-mdc-text-field style="display:inline-block;width:250px;height:56px;" type="text" value="" label="${t9n`Suche`}"></cc-mdc-text-field></span>
+        <cc-mdc-text-field style="display:inline-block;width:250px;height:56px;" type="text" value="" label="${t9n`Suche`}"></cc-mdc-text-field>
       `;
       var inp = fli.querySelector("cc-mdc-text-field");
       var listener = (e) => {
@@ -293,7 +262,8 @@ class CcMdcSelect extends HTMLElement {
       fli.addEventListener("click", (e) => {e.preventDefault(); e.stopPropagation(); inp.focus();});
       fli.addEventListener("mousedown", (e) => {e.stopPropagation()});
       fli.addEventListener("mouseup", (e) => {e.stopPropagation()});
-      this.mdcList.appendChild(fli);
+      fli.addEventListener("keydown", (e) => {e.stopPropagation()});
+      this.mdcComponent.appendChild(fli);
     }
 
     this.applyDisabled();
@@ -351,9 +321,6 @@ class CcMdcSelect extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 }
 

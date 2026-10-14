@@ -17,16 +17,11 @@ class CcMdcFilteredDropdown extends HTMLElement {
     var hasWidth = ("" + this.style.width).indexOf("px") > 0 || ("" + this.style.width).indexOf("vw") > 0;
     var hasHeight = ("" + this.style.height).indexOf("px") > 0 || ("" + this.style.height).indexOf("vh") > 0;
 
-    this.innerHTML = html`<label class="mdc-text-field mdc-text-field--filled" ${(hasWidth || hasHeight) ? `style="width:100%"` : ``}>
-  <span class="mdc-text-field__ripple"></span>
-  <span class="mdc-floating-label" id="cc-mdc-label-${globalLabelCount}">${label}</span>
-  <input type="text" class="mdc-text-field__input" aria-labelledby="cc-mdc-label-${globalLabelCount}">
-  <span class="mdc-line-ripple"></span>
-</label>`;
+    this.innerHTML = html`<md-filled-text-field type="text" label="${label}" ${(hasWidth || hasHeight) ? `style="width:100%"` : ``}></md-filled-text-field>`;
 
-    this.labeldiv = this.querySelector("label");
-    this.mdcComponent = mdc.textField.MDCTextField.attachTo(this.labeldiv);
-    this.input = this.querySelector("input");
+    this.mdcComponent = this.childNodes[0];
+    this.labeldiv = this.mdcComponent;
+    this.input = this.mdcComponent;
 
     var targetfun = htmlFunctionArray[this.getAttribute(".target")];
     if (targetfun && targetfun.func && targetfun.func instanceof CcD5cHolder) {
@@ -105,27 +100,19 @@ class CcMdcFilteredDropdown extends HTMLElement {
   }
 
   applyDisabled() {
-    if (this.input) {
+    if (this.mdcComponent) {
       if (this._disabled) {
-        this.input.setAttribute("disabled", true);
+        this.mdcComponent.disabled = true;
       } else {
-        this.input.removeAttribute("disabled");
-      }
-    }
-    if (this.labeldiv) {
-      if (this._disabled) {
-        this.labeldiv.className = "mdc-text-field mdc-text-field--filled mdc-text-field--disabled";
-      } else {
-        this.labeldiv.className = "mdc-text-field mdc-text-field--filled";
+        this.mdcComponent.disabled = false;
       }
     }
   }
 
   set label (value) {
     this._label = value;
-    var x = this.querySelector(".mdc-floating-label");
-    if (x) {
-      x.innerText = value;
+    if (this.mdcComponent) {
+      this.mdcComponent.label = value;
     }
   }
 
@@ -156,7 +143,6 @@ class CcMdcFilteredDropdown extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 
