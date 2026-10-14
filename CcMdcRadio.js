@@ -12,13 +12,14 @@ class CcMdcRadio extends HTMLElement {
 
     this.innerHTML = `<div class="mdc-form-field" style="display:inline-flex;align-items:center;gap:12px;">
       <md-radio id="cc-mdc-label-${globalLabelCount}" name="${name}" touch-target="wrapper"></md-radio>
-      <label for="cc-mdc-label-${globalLabelCount}">${label}</label>
+      <label for="cc-mdc-label-${globalLabelCount}"></label>
     </div>
     `;
 
     this.mdcComponent = this.querySelector("md-radio");
     this.input = this.mdcComponent;
     this.label = this.querySelector("label");
+    this.label.innerText = label;
     this.applyValue();
     this.applyDisabled();
   }

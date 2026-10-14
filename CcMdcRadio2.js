@@ -15,13 +15,14 @@ class CcMdcRadio extends HTMLElement {
 
     this.innerHTML = `<div class="mdc-form-field" style="display:inline-flex;align-items:center;gap:12px;">
       <md-radio id="cc-mdc-label-${globalLabelCount}" name="${name}" value="${this.radiovalue}" touch-target="wrapper"></md-radio>
-      <label for="cc-mdc-label-${globalLabelCount}">${label}</label>
+      <label for="cc-mdc-label-${globalLabelCount}"></label>
     </div>
     `;
 
     this.mdcComponent = this.querySelector("md-radio");
     this.input = this.mdcComponent;
     this.label = this.querySelector("label");
+    this.label.innerText = label;
 
     var targetfun = htmlFunctionArray[this.getAttribute(".target")];
     if (targetfun && targetfun.func && targetfun.func instanceof CcD5cHolder) {
