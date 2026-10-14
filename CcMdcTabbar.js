@@ -29,7 +29,7 @@ class CcMdcTabbar extends HTMLElement {
     });
 
     if (this._activeTab >= 0) {
-      this.mdcComponent.activeTabIndex = this._activeTab;
+      this.activateTab(this._activeTab);
     }
   }
 
@@ -43,7 +43,13 @@ class CcMdcTabbar extends HTMLElement {
   activateTab (index) {
     this._activeTab = index;
     if (this.mdcComponent) {
-      this.mdcComponent.activeTabIndex = this._activeTab;
+      if (this.mdcComponent.updateComplete) {
+        this.mdcComponent.updateComplete.then(() => {
+          this.mdcComponent.activeTabIndex = this._activeTab;
+        });
+      } else {
+        this.mdcComponent.activeTabIndex = this._activeTab;
+      }
     }
   }
 
