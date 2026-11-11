@@ -28,9 +28,8 @@ class CcMdcTopAppBar extends HTMLElement {
     <main class="main-content ${this._bottomBar ? "main-content-bottom-app-bar" : "main-content-top-app-bar"}" id="main-content" style="left: 0px; right: 0px; position: absolute; overflow:auto;"}">
     </main>`;
 
-    this.mdcComponent = mdc.topAppBar.MDCTopAppBar.attachTo(this.childNodes[0]);
-    this.mdcComponent.setScrollTarget(document.getElementById('main-content'));
-    this.mdcComponent.listen('MDCTopAppBar:nav', () => {
+    var navIcon = this.querySelector(".mdc-top-app-bar__navigation-icon");
+    navIcon.addEventListener("click", () => {
       this.drawer.mdcComponent.open = !this.drawer.mdcComponent.open;
     });
 
@@ -73,7 +72,6 @@ class CcMdcTopAppBar extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 

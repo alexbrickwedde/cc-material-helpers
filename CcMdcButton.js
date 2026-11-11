@@ -66,9 +66,18 @@ class CcMdcButton extends HTMLElement {
   setColor(color) {
     this._color = color;
     if (this.button) {
-      this.button.style.color = this._color;
+      this.applyColor();
     }
     return this;
+  }
+
+  applyColor() {
+    if (this.button && this._color) {
+      this.button.style.color = this._color;
+      this.button.style.setProperty("--md-filled-button-label-text-color", this._color);
+      this.button.style.setProperty("--md-filled-button-icon-color", this._color);
+      this.button.style.setProperty("--md-icon-button-icon-color", this._color);
+    }
   }
 
   set disabled (value) {
@@ -112,26 +121,23 @@ class CcMdcButton extends HTMLElement {
     this.style.userSelect = "none";
 
     if (this.selectlabel) {
-      this.innerHTML = html`<button style="border:0px;background-color:transparent;padding-top:0px;">
+      this.innerHTML = html`<button style="border:0px;background-color:transparent;padding:0px;cursor:pointer;">
       <div class="mdc-select mdc-select--filled" style="min-width:170px;max-width:170px;width:170px;">
-        <div class="mdc-select__anchor mdc-ripple-upgraded" style="--mdc-ripple-fg-size:102px; --mdc-ripple-fg-scale:1.8528; --mdc-ripple-fg-translate-start:27px, -16px; --mdc-ripple-fg-translate-end:34px, -23px;" tabindex="0" aria-disabled="false" aria-expanded="false">
-          <span class="mdc-select__ripple"></span>
-          <span class="mdc-select__selected-text" style="" id="selectvalue">${this.selectvalue}</span>
-          <span class="mdc-floating-label mdc-floating-label--float-above" id="selectlabel">${this.selectlabel}</span><span class="mdc-line-ripple" style="transform-origin: 144px center;"></span>
-        </div>
+        <span class="mdc-floating-label" id="selectlabel">${this.selectlabel}</span>
+        <span class="mdc-select__selected-text" id="selectvalue">${this.selectvalue}</span>
       </div>
     </button>`;
       this.button = this.childNodes[0];
     } else if (icon && label) {
-      this.innerHTML = html`<button style="${hasWidth ? `width:100%;` : ``}${hasHeight ? `height:100%;` : ``}${hasFontSize ? `font-size:${this.style.fontSize};` : ``}" class="mdc-button mdc-button--raised">
-      <i class="material-icons mdc-button__icon" aria-hidden="true">` + icon + `</i>
+      this.innerHTML = html`<md-filled-button style="${hasWidth ? `width:100%;` : ``}${hasHeight ? `height:100%;` : ``}${hasFontSize ? `font-size:${this.style.fontSize};--md-filled-button-label-text-size:${this.style.fontSize};` : ``}">
+      <i class="material-icons" slot="icon" aria-hidden="true">` + icon + `</i>
       <span class="mdc-button__label">` + label + html`</span>
-    </button>`;
+    </md-filled-button>`;
       this.button = this.childNodes[0];
     } else if (label) {
-      this.innerHTML = html`<button style="${hasWidth ? `width:100%;` : ``}${hasHeight ? `height:100%;` : ``}${hasFontSize ? `font-size:${this.style.fontSize};` : ``}" class="mdc-button mdc-button--raised">
+      this.innerHTML = html`<md-filled-button style="${hasWidth ? `width:100%;` : ``}${hasHeight ? `height:100%;` : ``}${hasFontSize ? `font-size:${this.style.fontSize};--md-filled-button-label-text-size:${this.style.fontSize};` : ``}">
       <span class="mdc-button__label">` + label + html`</span>
-    </button>`;
+    </md-filled-button>`;
       this.button = this.childNodes[0];
     } else if (icon) {
       if (this.selfIcon) {
@@ -139,19 +145,14 @@ class CcMdcButton extends HTMLElement {
         this.innerHTML = icon;
         this.button = this;
       } else {
-        this.innerHTML = html`<button class="material-icons mdc-top-app-bar__action-item mdc-icon-button" aria-label="">` + icon + `</button>`;
+        this.innerHTML = html`<md-icon-button aria-label=""><span class="material-icons" aria-hidden="true">` + icon + `</span></md-icon-button>`;
         this.button = this.childNodes[0];
       }
     }
 
-    if (this._color) {
-      this.button.style.color = this._color;
-    }
+    this.applyColor();
 
     this.applyDisabled();
-    if (!actionbar) {
-      this.mdcComponent = mdc.ripple.MDCRipple.attachTo(this.button);
-    }
 
     var clickfun = this.getAttribute("@click");
     if (htmlFunctionArray[clickfun]) {
@@ -160,9 +161,6 @@ class CcMdcButton extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 }
 

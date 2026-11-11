@@ -21,7 +21,17 @@ class CcMdcList extends HTMLElement {
     this.innerHTML = html`<ul class="mdc-list ${lineclass}"></ul>`;
 
     this.ulElem = this.childNodes[0];
-    this.mdcComponent = mdc.list.MDCList.attachTo(this.childNodes[0]);
+    this.ulElem.addEventListener("click", (e) => {
+      if (!this._singleSelection) {
+        return;
+      }
+      for (var li of this.items) {
+        if (li.contains(e.target)) {
+          this.select(li);
+          break;
+        }
+      }
+    });
 
     if (this.dndarrowconfig) {
       if (this.dndarrowconfig.src) {
@@ -70,7 +80,6 @@ class CcMdcList extends HTMLElement {
       }
     }
 
-    this.mdcComponent.singleSelection = this._singleSelection;
     for (var li of this.items) {
       this.ulElem.appendChild (li);
     }
@@ -78,9 +87,6 @@ class CcMdcList extends HTMLElement {
 
   set singleSelection (value) {
     this._singleSelection = value;
-    if (this.mdcComponent) {
-      this.mdcComponent.singleSelection = this._singleSelection;
-    }
   }
 
   clearItems() {
@@ -183,7 +189,6 @@ class CcMdcList extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
     if (this.dndarrowani) {
       clearInterval(this.dndarrowani);
       this.dndarrowani = null;

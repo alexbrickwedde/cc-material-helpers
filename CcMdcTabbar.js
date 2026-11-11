@@ -6,16 +6,11 @@ class CcMdcTabbar extends HTMLElement {
   }
 
   connectedCallback() {
-    this.innerHTML = html`<div class="mdc-tab-bar" role="tablist">
-      <div class="mdc-tab-scroller">
-        <div class="mdc-tab-scroller__scroll-area">
-          <div class="mdc-tab-scroller__scroll-content">
-          </div>
-        </div>
-      </div>
-    </div>`;
+    this.innerHTML = html`<md-tabs></md-tabs>`;
 
-    this.tabbarContent = this.querySelector(".mdc-tab-scroller__scroll-content");
+    this.tabbarContent = this.childNodes[0];
+    this.tabbar = this.tabbarContent;
+    this.mdcComponent = this.tabbarContent;
     for (let i = 0; i < this.items.length; i++) {
       var e = this.items[i];
       e.addEventListener("click", () => {
@@ -24,20 +19,17 @@ class CcMdcTabbar extends HTMLElement {
       this.tabbarContent.appendChild (e);
     }
 
-    this.tabbar = this.querySelector(".mdc-tab-bar");
-    this.mdcComponent = mdc.tabBar.MDCTabBar.attachTo(this.tabbar);
-    this.mdcComponent.initialize();
-
-    this.tabbar.addEventListener("MDCTabBar:activated", (e) => {
-      this.dispatchEvent(new CustomEvent("change", { detail : e.detail.index }))
-      var e = this.items[e.detail.index];
-      if (e) {
-        e.dispatchEvent(new CustomEvent("activated", { detail : null }));
+    this.tabbar.addEventListener("change", (e) => {
+      var index = this.mdcComponent.activeTabIndex;
+      this.dispatchEvent(new CustomEvent("change", { detail : index }))
+      var item = this.items[index];
+      if (item) {
+        item.dispatchEvent(new CustomEvent("activated", { detail : null }));
       }
     });
 
     if (this._activeTab >= 0) {
-      this.mdcComponent.activateTab(this._activeTab);
+      this.activateTab(this._activeTab);
     }
   }
 
@@ -51,26 +43,23 @@ class CcMdcTabbar extends HTMLElement {
   activateTab (index) {
     this._activeTab = index;
     if (this.mdcComponent) {
-      this.mdcComponent.activateTab(this._activeTab);
+      if (this.mdcComponent.updateComplete) {
+        this.mdcComponent.updateComplete.then(() => {
+          this.mdcComponent.activeTabIndex = this._activeTab;
+        });
+      } else {
+        this.mdcComponent.activeTabIndex = this._activeTab;
+      }
     }
   }
 
   addTab(icon, text) {
-    var e = document.createElement("button");
-    e.className = "mdc-tab";
+    var e = document.createElement("md-primary-tab");
     e.role = "tab";
-    e.ariaSelected = "true";
     e.tabindex = this.items.length;
     e.innerHTML = `
-          <span class="mdc-tab__content">
-            <span class="mdc-tab__icon material-icons" aria-hidden="true">${icon}</span>
-            <span class="mdc-tab__text-label">${text}</span>
-          </span>
-          <span class="mdc-tab-indicator">
-            <span class="mdc-tab-indicator__content mdc-tab-indicator__content--underline"></span>
-          </span>
-          <span class="mdc-tab__ripple"></span>
-          <div class="mdc-tab__focus-ring"></div>`;
+          <span class="material-icons" slot="icon" aria-hidden="true">${icon}</span>
+          <span class="mdc-tab__text-label">${text}</span>`;
     return this.addElement(e);
   }
 
@@ -80,14 +69,12 @@ class CcMdcTabbar extends HTMLElement {
         this.activateTab(li.tabindex);
       });
       this.tabbarContent.appendChild (li);
-      this.mdcComponent.initialize();
     }
     this.items.push(li);
     return li;
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 

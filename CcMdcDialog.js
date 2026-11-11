@@ -106,93 +106,67 @@ class CcMdcDialog extends HTMLElement {
     var ok = this.ok || this.getAttribute("ok") || "Ok";
     var cancel = this.cancel || this.getAttribute("cancel") || "Abbruch";
 
+    var sizestyle = `${this._width > 0 ? `width:${this._width}px;` : ``}${this._height > 0 ? `height:${this._height}px;` : ``}`;
+
     switch (type) {
       case "nobuttons":
-        this.innerHTML = html`<div class="mdc-dialog" style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};">
-          <div class="mdc-dialog__container">
-            <div class="mdc-dialog__surface"
+        this.innerHTML = html`<md-dialog style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};"
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="my-dialog-title"
               aria-describedby="my-dialog-content">
-              <div class="mdc-dialog__content" tabindex="0" id="my-dialog-content" style="max-height:calc(100vh - 70px);"></div>
-            </div>
-          </div>
-          <div class="mdc-dialog__scrim"></div>
-        </div>`;
+          <div slot="content" tabindex="0" id="my-dialog-content" style="max-height:calc(100vh - 70px);"></div>
+        </md-dialog>`;
         break;
       default:
       case "alert":
-        this.innerHTML = html`<div class="mdc-dialog" style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};">
-          <div class="mdc-dialog__container">
-            <div class="mdc-dialog__surface"
-              style="${this._width > 0 ? `width:${this._width}px;` : ``}${this._height > 0 ? `height:${this._height}px;` : ``}"
+        this.innerHTML = html`<md-dialog style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};${sizestyle}"
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="my-dialog-title"
               aria-describedby="my-dialog-content">
-              <div class="mdc-dialog__content" id="my-dialog-content" style="max-height:calc(100vh - 70px);"></div>
-              <div class="mdc-dialog__actions">
-                <button type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-action="cancel">
-                  <div class="mdc-button__ripple"></div>
-                  <span class="mdc-button__label">${ok}</span>
-                </button>
-              </div>
-            </div>
+          <div slot="content" id="my-dialog-content" style="max-height:calc(100vh - 70px);"></div>
+          <div slot="actions">
+            <md-text-button type="button" id="closebutton">
+              <span class="mdc-button__label">${ok}</span>
+            </md-text-button>
           </div>
-          <div class="mdc-dialog__scrim"></div>
-        </div>`;
+        </md-dialog>`;
         break;
       case "okcancel":
-        this.innerHTML = html`<div class="mdc-dialog" style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};">
-          <div class="mdc-dialog__container">
-            <div class="mdc-dialog__surface"
-              style="display:table;";
+        this.innerHTML = html`<md-dialog style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};"
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="my-dialog-title"
               aria-describedby="my-dialog-content">
-              <div class="mdc-dialog__content" id="my-dialog-content" style="box-sizing:border-box;max-height:calc(100vh - 70px);"></div>
-              <div class="mdc-dialog__actions">
-                                                            <!-- data-mdc-dialog-action="ok"-->
-                <button id="okbutton" type="button" class="mdc-button mdc-dialog__button" data-mdc-dialog-button-default="true">
-                  <div class="mdc-button__ripple"></div>
-                  <span class="mdc-button__label">${ok}</span>
-                </button>
-                <button id="cancelbutton" type="button" class="mdc-button mdc-dialog__button">
-                  <div class="mdc-button__ripple"></div>
-                  <span class="mdc-button__label">${cancel}</span>
-                </button>
-              </div>
-            </div>
+          <div slot="content" id="my-dialog-content" style="box-sizing:border-box;max-height:calc(100vh - 70px);"></div>
+          <div slot="actions">
+            <md-text-button id="okbutton" type="button">
+              <span class="mdc-button__label">${ok}</span>
+            </md-text-button>
+            <md-text-button id="cancelbutton" type="button">
+              <span class="mdc-button__label">${cancel}</span>
+            </md-text-button>
           </div>
-          <div class="mdc-dialog__scrim"></div>
-        </div>`;
+        </md-dialog>`;
         break;
       case "buttons":
-        this.innerHTML = html`<div class="mdc-dialog" style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};">
-          <div class="mdc-dialog__container">
-            <div class="mdc-dialog__surface"
-              style="display:table;";
+        this.innerHTML = html`<md-dialog style="z-index:${this.zIndex >= 0 ? this.zIndex : 1000};"
               role="alertdialog"
               aria-modal="true"
               aria-labelledby="my-dialog-title"
               aria-describedby="my-dialog-content">
-              <div class="mdc-dialog__content" id="my-dialog-content" style="box-sizing:border-box;max-height:calc(100vh - 70px);"></div>
-              <div class="mdc-dialog__actions">
-              </div>
-            </div>
+          <div slot="content" id="my-dialog-content" style="box-sizing:border-box;max-height:calc(100vh - 70px);"></div>
+          <div slot="actions">
           </div>
-          <div class="mdc-dialog__scrim"></div>
-        </div>`;
+        </md-dialog>`;
 
-        var actions = this.querySelector(".mdc-dialog__actions");
+        var actions = this.querySelector("[slot=actions]");
         for(var i = 0; i < this.buttons.length; i++) {
           let b = this.buttons[i];
-          let button = actions.appendHTML(html`<button type="button" class="mdc-button mdc-dialog__button" ${b.default ? `data-mdc-dialog-button-default="true"`: ``}>
-                  <div class="mdc-button__ripple"></div>
+          let button = actions.appendHTML(html`<md-text-button type="button">
                   <span class="mdc-button__label">${b.label}</span>
-                </button>`);
+                </md-text-button>`);
           button.addEventListener("click", (e) => {
             if (this.allowpreventclose) {
               if (this.allowpreventclose(b.action, this)) {
@@ -219,9 +193,11 @@ class CcMdcDialog extends HTMLElement {
         break;
     }
 
+    this.dialog = this.childNodes[0];
+    this.mdcComponent = this.dialog;
+
     if(flexmaxwidth) {
-      var surf = this.querySelector(".mdc-dialog__surface")
-      surf.style.maxWidth = "calc(100vw - 50px)";
+      this.dialog.style.maxWidth = "calc(100vw - 50px)";
     }
 
     var dlgContent = this.querySelector("#my-dialog-content");
@@ -236,23 +212,35 @@ class CcMdcDialog extends HTMLElement {
       dlgContent.innerHTML = html1;
     }
 
-    this.dialog = this.childNodes[0];
-    this.mdcComponent = mdc.dialog.MDCDialog.attachTo(this.dialog);
+    // Never close when the scrim is clicked (MDC scrimClickAction = "").
+    this.dialog.addEventListener("cancel", (e) => {
+      e.preventDefault();
+    });
     switch (type) {
       case "nobuttons":
-        this.mdcComponent.escapeKeyAction = "";
-        this.mdcComponent.scrimClickAction = "";
+        // No escape key action (MDC escapeKeyAction = "").
         break;
       default:
-        this.mdcComponent.escapeKeyAction = "close";
-        this.mdcComponent.scrimClickAction = "";
+        // Close on escape key (MDC escapeKeyAction = "close").
+        this.dialog.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            this.mdcComponent.close();
+          }
+        });
         break;
     }
     
     if (this._open) {
-      this.mdcComponent.open();
+      this.mdcComponent.show();
     }
 
+    var closebutton = this.querySelector("#closebutton");
+    if (closebutton) {
+      closebutton.addEventListener("click", (e) => {
+        this.mdcComponent.close();
+      })
+    }
     var okbutton = this.querySelector("#okbutton");
     if (okbutton) {
       okbutton.addEventListener("click", (e) => {
@@ -297,7 +285,7 @@ class CcMdcDialog extends HTMLElement {
     }
 
     
-    this.dialog.addEventListener("MDCDialog:closed", (e) => {
+    this.dialog.addEventListener("closed", (e) => {
       setTimeout(() => {
         this.parentNode.removeChild(this);
       }, 10);
@@ -312,18 +300,14 @@ class CcMdcDialog extends HTMLElement {
   }
 
   setMaxWidth(width) {
-    var surface = this.querySelector(".mdc-dialog__surface");
-    if (surface) {
-      surface.style.maxWidth = width;
+    if (this.dialog) {
+      this.dialog.style.maxWidth = width;
     }
   }
 
   disconnectedCallback() {
     this.dlgResolve = null;
     this.dlgReject = null;
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 
   registerUpdateEvent(evtSource, evtName, evtHandler) {
@@ -335,7 +319,7 @@ class CcMdcDialog extends HTMLElement {
   open() {
     this._open = true;
     if (this.mdcComponent) {
-      this.mdcComponent.open();
+      this.mdcComponent.show();
     } else {
       document.body.appendChild(this);
     }

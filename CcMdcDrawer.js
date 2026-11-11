@@ -18,7 +18,20 @@ class CcMdcDrawer extends HTMLElement {
     this.mdcList.dndarrowconfig = this.dndarrowconfig;
     this.querySelector(".mdc-drawer__content").appendChild(this.mdcList);
 
-    this.mdcComponent = mdc.drawer.MDCDrawer.attachTo(this.childNodes[0]);
+    this.drawerElem = this.childNodes[0];
+    let self = this;
+    this.mdcComponent = {
+      get open () {
+        return !self.drawerElem.classList.contains("mdc-drawer--closed");
+      },
+      set open (value) {
+        self.drawerElem.classList.toggle("mdc-drawer--closed", !value);
+        var content = self.querySelector(".mdc-drawer-app-content");
+        if (content) {
+          content.classList.toggle("mdc-drawer-app-content--full", !value);
+        }
+      },
+    };
     this.mdcComponent.open = this.openDrawer;
     this.contentElement = this.querySelector(".mdc-drawer-app-content");
 
@@ -60,7 +73,6 @@ class CcMdcDrawer extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 

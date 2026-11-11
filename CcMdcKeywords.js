@@ -13,11 +13,9 @@ class CcMdcKeywords extends HTMLElement {
   }
 
   applyDisabled() {
-    if (this.mdcComponent) {
-      if (this._disabled) {
-        this.mdcComponent.disabled = true;
-      } else {
-        this.mdcComponent.disabled = false;
+    if (this.mdcElement) {
+      for(var chip of this.mdcElement.querySelectorAll("md-assist-chip, md-input-chip")) {
+        chip.disabled = this._disabled ? true : false;
       }
     }
   }
@@ -41,52 +39,44 @@ class CcMdcKeywords extends HTMLElement {
       return;
     }
 
-    for( var i = this.mdcComponent.chips.length - 1; i >= 0; i--) {
-      this.mdcComponent.getDefaultFoundation().adapter.removeChipAtIndex(i);
-    }
+    this.mdcElement.innerHTML = "";
 
-    var div = document.createElement("div");
-    div.id = "@@add@@";
-    div.className = "mdc-chip";
-    div.innerHTML = `<div class="mdc-chip__ripple"></div>
-      <i class="material-icons mdc-chip__icon mdc-chip__icon--leading mdc-chip__icon--leading-hidden"></i>
-      <span role="gridcell">
-        <span role="checkbox" tabindex="0" aria-checked="false" class="mdc-chip__primary-action">
-          <span class="mdc-chip__text">${this._label}</span>
-        </span>
-      </span>
-      <span role="gridcell">
-        <i class="material-icons mdc-chip__icon mdc-chip__icon--trailing" tabindex="-1" role="button">add</i>
-      </span>
-      `;
-    this.mdcElement.appendChild(div);
-    this.mdcComponent.addChip(div);
+    var addChip = document.createElement("md-assist-chip");
+    addChip.id = "@@add@@";
+    addChip.label = "";
+    addChip.innerHTML = `<span>${this._label}</span><span slot="icon" class="material-icons">add</span>`;
+    addChip.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (this._disabled) {
+        return;
+      }
+      CcPrompt("Keyword", "")
+      .then((keyword) => {
+        this._items.push(keyword);
+        this.applyValue();
+      });
+    });
+    this.mdcElement.appendChild(addChip);
 
     for(let i = 0; i < this._items.length; i++) {
       let item = this._items[i];
-      var div = document.createElement("div");
-      div.id = item.value;
-      div.className = "mdc-chip";
-      div.innerHTML = `<div class="mdc-chip__ripple"></div>
-        <i class="material-icons mdc-chip__icon mdc-chip__icon--leading mdc-chip__icon--leading-hidden"></i>
-        <span role="gridcell">
-          <span role="checkbox" tabindex="0" aria-checked="false" class="mdc-chip__primary-action">
-            <span class="mdc-chip__text">${item}</span>
-          </span>
-        </span>
-        <span role="gridcell">
-          <i id="delete" class="material-icons mdc-chip__icon mdc-chip__icon--trailing" tabindex="-1" role="button">delete</i>
-        </span>
-        `;
-      this.mdcElement.appendChild(div);
-
-      div.querySelector("#delete").addEventListener("click", (e) => {
+      var chip = document.createElement("md-input-chip");
+      chip.id = item.value;
+      chip.label = "";
+      chip.innerHTML = `<span>${item}</span>`;
+      chip.addEventListener("remove", (e) => {
+        e.preventDefault();
+        if (this._disabled) {
+          return;
+        }
         this._items.splice(i, 1);
         this.applyValue();
       });
-
-      this.mdcComponent.addChip(div);
+      this.mdcElement.appendChild(chip);
     }
+
+    this.applyDisabled();
   }
 
   connectedCallback() {
@@ -95,30 +85,14 @@ class CcMdcKeywords extends HTMLElement {
     this._label = this.label || this.getAttribute("label") || "";
     var width = this.getAttribute("width") || this.width || 200;
 
-    this.innerHTML = `<div class="mdc-chip-set mdc-chip-set--filter" role="grid"></div>`;
+    this.innerHTML = `<md-chip-set></md-chip-set>`;
 
     this.mdcElement = this.childNodes[0];
-    this.mdcComponent = mdc.chips.MDCChipSet.attachTo(this.mdcElement);
-
-    this.mdcComponent.listen('MDCChip:selection', (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      if (e.detail.chipId == "@@add@@") {
-        CcPrompt("Keyword", "")
-        .then((keyword) => {
-          this._items.push(keyword);
-          this.applyValue();
-        });
-      }
-    });
 
     this.applyValue();
   }
 
   disconnectedCallback() {
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 }
 

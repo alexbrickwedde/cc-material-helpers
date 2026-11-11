@@ -10,31 +10,14 @@ class CcMdcCheckbox extends HTMLElement {
     var label = this.label || this.getAttribute("label") || "Label";
     this._disabled = this.getAttribute("disabled") ? true : false;
 
-    this.innerHTML = html`<div class="mdc-form-field">
-      <div class="mdc-checkbox">
-        <input type="checkbox"
-              class="mdc-checkbox__native-control"
-              id="cc-mdc-label-${globalLabelCount}"/>
-        <div class="mdc-checkbox__background">
-          <svg class="mdc-checkbox__checkmark"
-              viewBox="0 0 24 24">
-            <path class="mdc-checkbox__checkmark-path"
-                  fill="none"
-                  d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-          </svg>
-          <div class="mdc-checkbox__mixedmark"></div>
-        </div>
-        <div class="mdc-checkbox__ripple"></div>
-      </div>
+    this.innerHTML = html`<div class="mdc-form-field" style="display:inline-flex;align-items:center;gap:12px;">
+      <md-checkbox id="cc-mdc-label-${globalLabelCount}" touch-target="wrapper"></md-checkbox>
       <label for="cc-mdc-label-${globalLabelCount}">${label}</label>
     </div>
     `;
 
-    this.mdcCheckboxDiv = this.querySelector(".mdc-checkbox");
-    this.mdcComponent = mdc.checkbox.MDCCheckbox.attachTo(this.mdcCheckboxDiv);
-    this.mdcFormField = mdc.formField.MDCFormField.attachTo(this.querySelector('.mdc-form-field'));
-    this.mdcFormField.input = this.mdcComponent;
-    this.input = this.querySelector("input");
+    this.mdcComponent = this.querySelector("md-checkbox");
+    this.input = this.mdcComponent;
     this.labeldiv = this.querySelector("label");
 
     var targetfun = htmlFunctionArray[this.getAttribute(".target")];
@@ -128,8 +111,6 @@ class CcMdcCheckbox extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
-    this.mdcFormField.destroy();
   }
 }
 

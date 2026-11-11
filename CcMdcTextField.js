@@ -36,30 +36,13 @@ class CcMdcTextField extends HTMLElement {
     }
 
     if (this.type == "color") {
-      this.innerHTML = html`<label class="mdc-text-field mdc-text-field--filled" ${(hasWidth || hasHeight) ? `style="width:100%"` : `style="width:140px"`}>
-  <span class="mdc-text-field__ripple"></span>
-  <span class="mdc-floating-label" id="cc-mdc-label-${globalLabelCount}">${label}</span>
-  <span style="white-space:nowrap;">
-    <input type="text" ${isDefined(step) ? `step="${step}"` : ``} ${isDefined(min) ? `min="${min}"` : ``} ${isDefined(max) ? `max="${max}"` : ``} ${isDefined(pattern) ? `pattern="${pattern}"` : ``} class="mdc-text-field__input" aria-labelledby="cc-mdc-label-${globalLabelCount}">
-    <button style="vertical-align:top;padding:0px;border:0px;display:inline-block;width:24px;height:24px;"></button>  
-  </span>
-  <span class="mdc-line-ripple"></span>
-</label>`;
-      this.mdcComponent = mdc.textField.MDCTextField.attachTo(this.childNodes[0]);
-      this.labeldiv = this.querySelector("label");
-      this.input = this.querySelector("input");
+      this.innerHTML = html`<md-filled-text-field type="text" label="${label}" ${isDefined(pattern) ? `pattern="${pattern}"` : ``} ${(hasWidth || hasHeight) ? `style="width:100%"` : `style="width:140px"`}>
+  <button slot="trailing-icon" style="vertical-align:top;padding:0px;border:1px solid var(--md-sys-color-outline);border-radius:4px;display:inline-block;width:24px;height:24px;cursor:pointer;"></button>
+</md-filled-text-field>`;
+      this.mdcComponent = this.childNodes[0];
+      this.labeldiv = this.mdcComponent;
+      this.input = this.mdcComponent;
       this.button = this.querySelector("button");
-      var ph = (this.input.offsetHeight || (parseInt(this.style.height) / 2) || 28);
-      if (this.input.offsetWidth) {
-        this.input.style.width = (this.input.offsetWidth - ph) + "px"
-      } else if (parseInt(this.style.width)) {
-        this.input.style.width = parseInt(this.style.width) - 2 * ph;
-      } else {
-        this.input.style.width = 150 - 2 * ph;
-      }
-      this.button.style.minWidth = parseInt(ph) + "px";
-      this.button.style.width = parseInt(ph) + "px";
-      this.button.style.height = parseInt(ph) + "px";
       this.button.addEventListener("click", () => {
         CcColorPickerDlg(t9n`color picker`, this.value)
         .then((color) => {
@@ -78,16 +61,12 @@ class CcMdcTextField extends HTMLElement {
         this.button.style.backgroundColor = this.value;
       })
     } else {
-      this.innerHTML = html`<label class="mdc-text-field mdc-text-field--filled" ${hasTrailingIcon ? "mdc-text-field--with-trailing-icon" : ""} ${(hasWidth || hasHeight) ? `style="width:100%"` : ``}>
-  <span class="mdc-text-field__ripple"></span>
-  <span class="mdc-floating-label" id="cc-mdc-label-${globalLabelCount}">${label}</span>
-  <input type="${type}" ${isDefined(step) ? `step="${step}"` : ``} ${isDefined(min) ? `min="${min}"` : ``} ${isDefined(max) ? `max="${max}"` : ``} ${isDefined(pattern) ? `pattern="${pattern}"` : ``} class="mdc-text-field__input" aria-labelledby="cc-mdc-label-${globalLabelCount}">
-  <i id="trailingIcon" style="opacity:0.4;${hasTrailingIcon ? "" : "display:none;"};float:right;" class='material-icons'>${hasTrailingIcon}</i>
-  <span class="mdc-line-ripple"></span>
-</label>`;
-      this.mdcComponent = mdc.textField.MDCTextField.attachTo(this.childNodes[0]);
-      this.labeldiv = this.querySelector("label");
-      this.input = this.querySelector("input");
+      this.innerHTML = html`<md-filled-text-field type="${type}" label="${label}" ${isDefined(step) ? `step="${step}"` : ``} ${isDefined(min) ? `min="${min}"` : ``} ${isDefined(max) ? `max="${max}"` : ``} ${isDefined(pattern) ? `pattern="${pattern}"` : ``} ${(hasWidth || hasHeight) ? `style="width:100%"` : ``}>
+  <i id="trailingIcon" slot="trailing-icon" style="opacity:0.4;cursor:pointer;${hasTrailingIcon ? "" : "display:none;"}" class='material-icons'>${hasTrailingIcon}</i>
+</md-filled-text-field>`;
+      this.mdcComponent = this.childNodes[0];
+      this.labeldiv = this.mdcComponent;
+      this.input = this.mdcComponent;
     }
 
     if (hasTrailingIcon) {
@@ -172,27 +151,19 @@ class CcMdcTextField extends HTMLElement {
   }
 
   applyDisabled() {
-    if (this.input) {
+    if (this.mdcComponent) {
       if (this._disabled) {
-        this.input.setAttribute("disabled", true);
+        this.mdcComponent.disabled = true;
       } else {
-        this.input.removeAttribute("disabled");
-      }
-    }
-    if (this.labeldiv) {
-      if (this._disabled) {
-        this.labeldiv.className = "mdc-text-field mdc-text-field--filled mdc-text-field--disabled";
-      } else {
-        this.labeldiv.className = "mdc-text-field mdc-text-field--filled";
+        this.mdcComponent.disabled = false;
       }
     }
   }
 
   set label (value) {
     this._label = value;
-    var x = this.querySelector(".mdc-floating-label");
-    if (x) {
-      x.innerText = value;
+    if (this.mdcComponent) {
+      this.mdcComponent.label = value;
     }
   }
 
@@ -281,7 +252,6 @@ class CcMdcTextField extends HTMLElement {
   }
 
   disconnectedCallback() {
-    this.mdcComponent.destroy();
   }
 }
 

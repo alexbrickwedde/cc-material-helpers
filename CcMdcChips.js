@@ -17,11 +17,9 @@ class CcMdcChips extends HTMLElement {
   }
 
   applyDisabled() {
-    if (this.mdcComponent) {
-      if (this._disabled) {
-        this.mdcComponent.disabled = true;
-      } else {
-        this.mdcComponent.disabled = false;
+    if (this.mdcElement) {
+      for(var chip of this.mdcElement.querySelectorAll("md-filter-chip, md-input-chip")) {
+        chip.disabled = this._disabled ? true : false;
       }
     }
   }
@@ -59,6 +57,17 @@ class CcMdcChips extends HTMLElement {
     return this._value;
   }
 
+  #makeRemovableChip(label, chipId) {
+    var chip = document.createElement("md-input-chip");
+    chip.id = chipId;
+    chip.label = "";
+    chip.innerHTML = `<span>${label}</span>`;
+    if (this._disabled) {
+      chip.disabled = true;
+    }
+    return chip;
+  }
+
   applyValue() {
     if (!this.mdcElement) {
       return;
@@ -80,20 +89,19 @@ class CcMdcChips extends HTMLElement {
       if (this.bits) {
       } else {
         for(var item in this._value) {
-          var div = document.createElement("div");
-          div.id = JSON.stringify(item);
-          div.className = "mdc-chip";
-          div.innerHTML = `<div class="mdc-chip__ripple"></div>
-            <span role="gridcell">
-              <span role="checkbox" tabindex="0" aria-checked="false" class="mdc-chip__primary-action">
-                <span class="mdc-chip__text">${item}</span>
-              </span>
-            </span>
-            `;
-          this.mdcElement.appendChild(div);
-          if (!this._disabled && this.mdcComponent) {
-            this.mdcComponent.addChip(div);
-          }
+          let chipId = JSON.stringify(item);
+          let chip = this.#makeRemovableChip(item, chipId);
+          chip.addEventListener("remove", (e) => {
+            e.preventDefault();
+            if (!this._disabled) {
+              var v = JSON.parse(chipId);
+              if (this._value[v]) {
+                delete this._value[v];
+                this.applyValue();
+              }
+            }
+          });
+          this.mdcElement.appendChild(chip);
         }
       }
 
@@ -107,20 +115,17 @@ class CcMdcChips extends HTMLElement {
       } else {
         for(var item of this._items) {
           if (this._value[item.value]) {
-            var div = document.createElement("div");
-            div.id = item.value;
-            div.className = "mdc-chip";
-            div.innerHTML = `<div class="mdc-chip__ripple"></div>
-              <span role="gridcell">
-                <span role="checkbox" tabindex="0" aria-checked="false" class="mdc-chip__primary-action">
-                  <span class="mdc-chip__text">${item.html}</span>
-                </span>
-              </span>
-              `;
-            this.mdcElement.appendChild(div);
-            if (!this._disabled && this.mdcComponent) {
-              this.mdcComponent.addChip(div);
-            }
+            let chipId = item.value;
+            let chip = this.#makeRemovableChip(item.html, chipId);
+            chip.addEventListener("remove", (e) => {
+              e.preventDefault();
+              if (!this._disabled) {
+                delete this._value[chipId];
+                this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : chipId}}));
+                this.applyValue();
+              }
+            });
+            this.mdcElement.appendChild(chip);
           }
         }
       }
@@ -129,64 +134,43 @@ class CcMdcChips extends HTMLElement {
     }
 
     for(var item of this._items) {
-      var div = document.createElement("div");
-      div.id = item.value;
+      let chip = document.createElement("md-filter-chip");
+      chip.id = item.value;
+      chip.label = "";
+      chip.innerHTML = `<span>${item.html}</span>` +
+        (isDefined(item.icon) ? `<span class="material-icons" style="margin-left:6px;">${item.icon}</span>` : ``);
       if (this._disabled) {
-        if (this.bits) {
-          if (this._value & parseInt(item.value)){
-            div.className = "mdc-chip mdc-chip--selected";
-          } else {
-            div.className = "mdc-chip";
-          }
-        } else {
-          if (this._value && this._value[item.value]){
-            div.className = "mdc-chip mdc-chip--selected";
-          } else {
-            div.className = "mdc-chip";
-          }
+        chip.disabled = true;
+      }
+      chip.addEventListener("click", (e) => {
+        if (this._disabled) {
+          return;
         }
-      } else {
-        div.className = "mdc-chip";
-      }
-      div.innerHTML = `<div class="mdc-chip__ripple"></div>
-        <i class="material-icons mdc-chip__icon mdc-chip__icon--leading mdc-chip__icon--leading-hidden"></i>
-        <span class="mdc-chip__checkmark" >
-          <svg class="mdc-chip__checkmark-svg" viewBox="-2 -3 30 30">
-            <path class="mdc-chip__checkmark-path" fill="none" stroke="black"
-                  d="M1.73,12.91 8.1,19.28 22.79,4.59"/>
-          </svg>
-        </span>
-        <span role="gridcell">
-          <span role="checkbox" tabindex="0" aria-checked="false" class="mdc-chip__primary-action">
-            <span class="mdc-chip__text">${item.html}</span>
-          </span>
-        </span>
-        ${isDefined(item.icon) ? `
-        <span role="gridcell">
-          <i class="material-icons mdc-chip__icon mdc-chip__icon--trailing" tabindex="-1" role="button">${item.icon}</i>
-        </span>` : ``}
-        `;
-      this.mdcElement.appendChild(div);
-      if (!this._disabled && this.mdcComponent) {
-        this.mdcComponent.addChip(div);
-      }
+        setTimeout(() => {
+          if (this.bits) {
+            this._value = chip.selected ? this._value | parseInt(chip.id) : this._value & ~parseInt(chip.id);
+            this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : chip.id}}));
+          } else {
+            this._value[chip.id] = chip.selected;
+            this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : chip.id}}));
+          }
+        }, 0);
+      });
+      this.mdcElement.appendChild(chip);
     }
     this._items = [];
-    if (this.mdcComponent) {
-      for(var chip of this.mdcComponent.chips) {
-        if (this.bits) {
-          chip.selected = (this._value & parseInt(chip.id)) ? true : false;
-        } else {
-          chip.selected = this._value && this._value[chip.id];
-        }
+    for(var chip of this.mdcElement.querySelectorAll("md-filter-chip")) {
+      if (this.bits) {
+        chip.selected = (this._value & parseInt(chip.id)) ? true : false;
+      } else {
+        chip.selected = this._value && this._value[chip.id] ? true : false;
       }
     }
   }
 
   clearChips() {
-    var chips = this.mdcComponent.chips_;
-    for(var chip of chips) {
-      chip.beginExit();
+    if (this.mdcElement) {
+      this.mdcElement.innerHTML = "";
     }
   }
 
@@ -195,50 +179,28 @@ class CcMdcChips extends HTMLElement {
     
     this.bits = this.bits || this.getAttribute("bits") == "true" || false;
 
-    this.innerHTML = `<div class="mdc-chip-set mdc-chip-set--filter" role="grid"></div><i id="add" style="display:none;margin-left:10px;cursor:pointer;" class="material-icons mdc-button__icon" aria-hidden="true">add</i>`;
+    this.innerHTML = `<md-chip-set></md-chip-set><i id="add" style="display:none;margin-left:10px;cursor:pointer;" class="material-icons" aria-hidden="true">add</i>`;
 
     this.mdcElement = this.childNodes[0];
-    if (!this._disabled) {
-      this.mdcComponent = mdc.chips.MDCChipSet.attachTo(this.mdcElement);
 
-      this.addBtn = this.querySelector("#add");
-      if (this.addButton) {
-        this.addBtn.style.display = "";
-      }
-
-      this.addBtn.addEventListener("click", (e) => {
-        var items = this._items.filter((i) => { return !this._value[i.value] });
-        CcChooser(`Add`, items, "html", "value", "")
-        .then((value) => {
-          this._value[value] = true;
-          this.applyValue();
-        })
-        .catch(() => {
-        });
-      });
-
-      this.mdcComponent.listen('MDCChip:selection', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        if (this.bits) {
-          this._value = e.detail.selected ? this._value | parseInt(e.detail.chipId) : this._value & ~parseInt(e.detail.chipId);
-          this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : e.detail.chipId}}));
-        } else if (this.valueOnly) {
-          var v = JSON.parse(e.detail.chipId);
-          if (this._value[v]) {
-            delete this._value[v];
-            this.applyValue();
-          }
-        } else if (this.addButton) {
-          delete this._value[e.detail.chipId];
-          this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : e.detail.chipId}}));
-          this.applyValue();
-        } else {
-          this._value[e.detail.chipId] = e.detail.selected;
-          this.dispatchEvent(new CustomEvent("change", {detail: {value : this._value, changed : e.detail.chipId}}));
-        }
-      });
+    this.addBtn = this.querySelector("#add");
+    if (this.addButton) {
+      this.addBtn.style.display = "";
     }
+
+    this.addBtn.addEventListener("click", (e) => {
+      if (this._disabled) {
+        return;
+      }
+      var items = this._items.filter((i) => { return !this._value[i.value] });
+      CcChooser(`Add`, items, "html", "value", "")
+      .then((value) => {
+        this._value[value] = true;
+        this.applyValue();
+      })
+      .catch(() => {
+      });
+    });
 
     var changefun = this.getAttribute("@change");
     if (htmlFunctionArray[changefun]) {
@@ -272,9 +234,6 @@ class CcMdcChips extends HTMLElement {
   }
 
   disconnectedCallback() {
-    if (this.mdcComponent) {
-      this.mdcComponent.destroy();
-    }
   }
 }
 
