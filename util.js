@@ -257,6 +257,32 @@ String.prototype.escapeXml = function escapeXml () {
   return span.innerHTML;
 }
 
+String.prototype.unescapeXml = function unescapeXml () {
+  return this.replace(/&(?:amp|lt|gt|quot|apos|#(?:[0-9]+|[xX][0-9A-Fa-f]+));/g, function (entity) {
+    var codePoint;
+    switch (entity) {
+      case "&amp;": return "&";
+      case "&lt;": return "<";
+      case "&gt;": return ">";
+      case "&quot;": return '"';
+      case "&apos;": return "'";
+      default:
+        codePoint = entity[2].toLowerCase() === "x"
+          ? parseInt(entity.substring(3, entity.length - 1), 16)
+          : parseInt(entity.substring(2, entity.length - 1), 10);
+        if (
+          codePoint === 0x9 || codePoint === 0xA || codePoint === 0xD ||
+          (codePoint >= 0x20 && codePoint <= 0xD7FF) ||
+          (codePoint >= 0xE000 && codePoint <= 0xFFFD) ||
+          (codePoint >= 0x10000 && codePoint <= 0x10FFFF)
+        ) {
+          return String.fromCodePoint(codePoint);
+        }
+        return entity;
+    }
+  });
+}
+
 String.prototype.interpolate = function(params, defaultvalue, foundnames) {
   var sanitized = this
     .replace(/\$\{([\s]*[^;\s\{]+[\s]*)\}/g, function(_, match){ var t = match.trim(); foundnames[t] = true; if (!isDefined(params[t])) {params[t] = isDefined(defaultvalue) ? defaultvalue : ""}; return `\$\{map.${t}\}`; })
