@@ -28,6 +28,7 @@ class CcMdcPrompt extends HTMLElement {
   }
 
   connectedCallback() {
+    var description = this.description || this.getAttribute("description") || "";
     var label = this.label || this.getAttribute("label") || "";
     var ok = this.ok || this.getAttribute("ok") || t9n`Ok`;
     var cancel = this.cancel || this.getAttribute("cancel") || t9n`Cancel`;
@@ -41,6 +42,7 @@ class CcMdcPrompt extends HTMLElement {
           aria-labelledby="my-dialog-title"
           aria-describedby="my-dialog-content">
           <div class="mdc-dialog__content" id="my-dialog-content" style="box-sizing:border-box;">
+            ${description}
             <cc-mdc-text-field id="value" type="text" style="margin:10px;" label="${label}"></cc-mdc-text-field>
             <cc-mdc-select id="objects" style="margin:10px;" label="${label}"></cc-mdc-select>
           </div>
@@ -139,12 +141,13 @@ class CcMdcPrompt extends HTMLElement {
 
 window.customElements.define("cc-mdc-prompt", CcMdcPrompt);
 
-function CcPrompt(label, defaultvalue, checkFun) {
+function CcPrompt(label, defaultvalue, checkFun, description) {
   return new Promise((resolve, reject) => {
     var p = new CcMdcPrompt();
     p.label = label;
     p.value = defaultvalue;
     p.checkFun = checkFun;
+    p.description = description;
     p.dlgResolve = (action) => {
       if (action == "ok") {
         resolve(p.value);
