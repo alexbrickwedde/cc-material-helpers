@@ -9,6 +9,9 @@ class CcMdcCheckbox extends HTMLElement {
 
     var label = this.label || this.getAttribute("label") || "Label";
     this._disabled = this.getAttribute("disabled") ? true : false;
+    if (this.hasAttribute("value")) {
+      this._value = this.getAttribute("value");
+    }
 
     this.innerHTML = html`<div class="mdc-form-field">
       <div class="mdc-checkbox">
@@ -117,6 +120,8 @@ class CcMdcCheckbox extends HTMLElement {
         this.mdcComponent.checked = false;
       } else if (this._value === "on") {
         this.mdcComponent.checked = true;
+      } else if (this._value === "off") {
+        this.mdcComponent.checked = false;
       } else if (this._value === true) {
         this.mdcComponent.checked = true;
       } else if (this._value === false) {
