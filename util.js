@@ -1,3 +1,13 @@
+Date.prototype.forFilename = function () {
+  const year = this.getFullYear().pad(4);
+  const month = (this.getMonth() + 1).pad(2); // Months are 0-indexed
+  const day = this.getDate().pad(2);
+  const hours = this.getHours().pad(2);
+  const minutes = this.getMinutes().pad(2);
+  const seconds = this.getSeconds().pad(2);
+  return `${year}${month}${day}_${hours}${minutes}${seconds}`;
+}
+
 function isDefined(v) {
   if (v === null) {
     return false;
